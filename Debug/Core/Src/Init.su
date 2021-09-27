@@ -1,0 +1,4 @@
+Init.c:5:6:Init_Ports	4	static
+Init.c:53:6:Init_Timer0	4	static
+Init.c:62:6:Init_Timer1	4	static
+Init.c:72:6:Init_UART	4	static

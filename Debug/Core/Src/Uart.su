@@ -1,0 +1,4 @@
+Uart.c:6:6:UART_SendBuf	16	static
+Uart.c:29:6:Display_device	16	static
+Uart.c:40:6:Arrow_Status	16	static
+Uart.c:53:6:Display_TestMode	4	static
