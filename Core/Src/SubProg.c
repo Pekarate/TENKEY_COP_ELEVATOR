@@ -154,7 +154,7 @@ void Out_Prog(void){
 	uint8_t i, j, temp;
 	uint16_t shift = 0;
 	uint8_t out_state[MAX_IN_BYTE];
-	static uint8_t out_old[MAX_IN_BYTE] = {0,0,0,0,0,0,0,0,0};
+	static uint8_t out_old[MAX_IN_BYTE] = {0xFF,0xFF,0xFF,0,0,0,0,0,0};
 
 	for(i=0; i<mMax_InByte; i++)
 		out_state[i] = out[i] ^ out_polarity[i];		// read input state; invert if desired

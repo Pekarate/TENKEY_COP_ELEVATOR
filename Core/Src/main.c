@@ -252,6 +252,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(500);
   	uint8_t i, j;
 
 	if (merker == RC_MERKER)									// restart by after Rx counter error
