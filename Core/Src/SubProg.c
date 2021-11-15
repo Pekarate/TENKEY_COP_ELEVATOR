@@ -56,8 +56,8 @@ uint8_t SPI_SendOneByte(uint8_t dat){
 ============================================================================================================*/
 uint8_t 	volatile	Userin[MAX_IN_BYTE];								/* variable for input after debouncing	*/
 void ReadInput(void){
-	memcpy((void *)in,(void *)Userin,MAX_IN_BYTE);
-	return ;
+//	memcpy((void *)in,(void *)Userin,MAX_IN_BYTE);
+//	return ;
 	uint8_t i, j, temp;
 	uint32_t kCode[3];
 
@@ -68,7 +68,7 @@ void ReadInput(void){
 //			(((uint32_t)PORTB & 0x03) << 15) |			// PB0~PB1
 //			(((uint32_t)PORTB & 0x30) << 13) |			// PB4~PB5
 //			(((uint32_t)PORTC & 0x07) << 19));			// PC0~PC2
-	kCode[0] ^= 0x3fffff;
+	kCode[0] = ((GPIOB->IDR) & 0x3FFF);
 
 
 	if(mExtern_Number)

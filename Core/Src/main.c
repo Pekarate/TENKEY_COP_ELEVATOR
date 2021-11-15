@@ -79,16 +79,19 @@ uint8_t virt_key_cnt =0;
 
 uint32_t TIM1_inter,TIM2_inter;
 uint32_t TIM1_inter_store,TIM2_inter_store;
+uint32_t time10ms,time500ms =0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	uint8_t i = 0;
 	static uint8_t time1_cnt = 0;
 	static uint8_t time0_cnt = 0;
+	static uint32_t reloadtime =0;
 	if(htim->Instance == htim1.Instance)
 	{
 		bTime.Time_10ms = 1;
 		time1_cnt++;
-
+		time10ms = HAL_GetTick() - reloadtime;
+		reloadtime = HAL_GetTick();
 		if((time1_cnt % 10) == 0)
 			{//100ms
 				bTime.Time_100ms = 1;
@@ -253,6 +256,13 @@ int main(void)
   MX_USART2_Init();
   /* USER CODE BEGIN 2 */
   HAL_Delay(500);
+  while(1)
+  {
+	 HAL_Delay(100);
+	 HC166_CLK_HIGH();
+	 HAL_Delay(100);
+	  HC166_CLK_LOW();
+  }
   	uint8_t i, j;
 
 	if (merker == RC_MERKER)									// restart by after Rx counter error
@@ -557,7 +567,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -591,9 +601,9 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 99;
+  htim1.Init.Prescaler = 7199;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 7199;
+  htim1.Init.Period = 99;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -637,9 +647,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 5999;
+  htim2.Init.Prescaler = 7199;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 5999;
+  htim2.Init.Period = 499;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
