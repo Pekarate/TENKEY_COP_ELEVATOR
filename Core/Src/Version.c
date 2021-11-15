@@ -9,7 +9,7 @@ uint32_t const identyty[ID_NUMS] = {
 	0x00000000,
 };
 
-uint8_t	const		version_uea  [SW_SIZE] = "V3.6E";
-uint8_t	const		hardware_uea [HW_SIZE] = "V1.5";
-uint8_t	const		device_name  [DV_SIZE]	= "G-564";
+uint8_t	const		version_uea  [SW_SIZE] = "V1.0A";
+uint8_t	const		hardware_uea [HW_SIZE] = "V1.0";
+uint8_t	const		device_name  [DV_SIZE]	= "VGS401";
 
