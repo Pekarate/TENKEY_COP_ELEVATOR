@@ -2,7 +2,7 @@
 #define	_SUBPROG_C_
 #include	"AllHeader.h"
 
-extern SPI_HandleTypeDef hspi1;
+
 uint8_t Get_NodeID(void){
 	uint8_t i, dat1 = 0;
 	for(i=0; i<10; i++)
@@ -38,7 +38,21 @@ void Init_SPI(void){
 }
 
 uint8_t SPI_SendOneByte(uint8_t dat){
-	HAL_SPI_Transmit(&hspi1, &dat, 1, 100);
+	SCK = 0;
+	__NOP();
+	for(int i=7;i>=0;i--)
+	{
+		PIN_A7 = (dat >> i) &0x01;
+		__NOP();
+		SCK =1;
+		__NOP();
+		__NOP();
+		SCK =0;
+		__NOP();
+		__NOP();
+		__NOP();
+	}
+	//HAL_SPI_Transmit(&hspi1, &dat, 1, 100);
 //	SSPBUF = dat;
 //	while(!(SSPSTAT & 0x01))
 //		ClrWdt();
@@ -70,6 +84,26 @@ void ReadInput(void){
 //			(((uint32_t)PORTC & 0x07) << 19));			// PC0~PC2
 	kCode[0] = ((GPIOB->IDR) & 0x3FFF);
 
+	HC166_PARA_EN(); __NOP();__NOP();__NOP();__NOP();
+	HC166_CLK_LOW();__NOP();__NOP();__NOP();__NOP();
+	HC166_CLK_HIGH();__NOP();__NOP();__NOP();__NOP();
+	HC166_CLK_LOW();__NOP();__NOP();__NOP();__NOP();
+	HC166_SERI_EN(); __NOP();__NOP();__NOP();__NOP();
+	HC595_LUCK_DIS();
+
+	temp =21;
+	for(j=0; j<8; j++)
+		{
+			if (PIN_A6)
+				kCode[temp / 32] |= (0x01ul << (temp % 32));
+			HC166_CLK_HIGH();__NOP();__NOP();__NOP();__NOP();
+			HC166_CLK_LOW();__NOP();__NOP();
+			--temp;
+		}
+
+	__NOP();__NOP();__NOP();__NOP();
+	__NOP();__NOP();__NOP();__NOP();
+	__NOP();__NOP();__NOP();__NOP();
 
 	if(mExtern_Number)
 		{//������չ��
@@ -89,7 +123,7 @@ void ReadInput(void){
 					for(j=0; j<16; j++)
 						{
 //#warning   please modify here!
-//							if (!(PORTC & BIT_4))
+							if (PIN_A6)
 								kCode[temp / 32] |= (0x01ul << (temp % 32));
 							HC166_CLK_HIGH();__NOP();__NOP();__NOP();__NOP();
 							HC166_CLK_LOW();__NOP();__NOP();

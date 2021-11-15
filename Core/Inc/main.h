@@ -64,6 +64,10 @@ void Error_Handler(void);
 #define HC595_SEL_GPIO_Port GPIOA
 #define SCK_Pin GPIO_PIN_5
 #define SCK_GPIO_Port GPIOA
+#define MISO_Pin GPIO_PIN_6
+#define MISO_GPIO_Port GPIOA
+#define MOSI_Pin GPIO_PIN_7
+#define MOSI_GPIO_Port GPIOA
 #define IC_IN1_Pin GPIO_PIN_0
 #define IC_IN1_GPIO_Port GPIOB
 #define IC_IN2_Pin GPIO_PIN_1
@@ -99,7 +103,11 @@ void Error_Handler(void);
 #define IC_IN10_Pin GPIO_PIN_9
 #define IC_IN10_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-
+#define SCK (*(volatile uint32_t *)0x42210194)
+#define PIN_A6 (*(volatile uint32_t *)0x42210118)  //i
+#define PIN_A7 (*(volatile uint32_t *)0x4221019C)
+#define HC959_SEl (*(volatile uint32_t *)0x42210184)  //PA1_O
+#define HC166_SEl (*(volatile uint32_t *)0x422101BC)  //PA15_O
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

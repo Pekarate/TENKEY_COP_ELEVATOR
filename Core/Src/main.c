@@ -43,8 +43,6 @@
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan;
 
-SPI_HandleTypeDef hspi1;
-
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 
@@ -59,7 +57,6 @@ USART_HandleTypeDef husart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_CAN_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
@@ -218,6 +215,7 @@ void ClrWdt (void)
 {
 
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -249,20 +247,17 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_CAN_Init();
-  MX_SPI1_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
   MX_USART2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_Delay(500);
-  while(1)
-  {
-	 HAL_Delay(100);
-	 HC166_CLK_HIGH();
-	 HAL_Delay(100);
-	  HC166_CLK_LOW();
-  }
+  HAL_Delay(50);
+//
+//  while(1)
+//  {
+//	  ReadInput();
+//  }
   	uint8_t i, j;
 
 	if (merker == RC_MERKER)									// restart by after Rx counter error
@@ -545,44 +540,6 @@ static void MX_CAN_Init(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
   * @brief TIM1 Initialization Function
   * @param None
   * @retval None
@@ -755,14 +712,23 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, Buzzer_Out_Pin|HC595_SEL_Pin|UART_DE_Pin|HC166_SEL_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Buzzer_Out_Pin|HC595_SEL_Pin|SCK_Pin|MOSI_Pin
+                          |UART_DE_Pin|HC166_SEL_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : Buzzer_Out_Pin HC595_SEL_Pin UART_DE_Pin HC166_SEL_Pin */
-  GPIO_InitStruct.Pin = Buzzer_Out_Pin|HC595_SEL_Pin|UART_DE_Pin|HC166_SEL_Pin;
+  /*Configure GPIO pins : Buzzer_Out_Pin HC595_SEL_Pin SCK_Pin MOSI_Pin
+                           UART_DE_Pin HC166_SEL_Pin */
+  GPIO_InitStruct.Pin = Buzzer_Out_Pin|HC595_SEL_Pin|SCK_Pin|MOSI_Pin
+                          |UART_DE_Pin|HC166_SEL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : MISO_Pin */
+  GPIO_InitStruct.Pin = MISO_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(MISO_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : IC_IN1_Pin IC_IN2_Pin IC_IN3_Pin IC_IN11_Pin
                            IC_IN12_Pin IC_IN13_Pin IC_IN14_Pin IC_IN4_Pin
