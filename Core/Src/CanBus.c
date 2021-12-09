@@ -852,6 +852,26 @@ void set_output (uint8_t *virt){
 						display [BUF_TEN] = 0;
 					if(display [BUF_UNIT] == 0x20)
 						display [BUF_UNIT] = 0;
+					if (!display [BUF_UNIT] && !display [BUF_TEN])							// lift out of work
+					{
+						display [BUF_TEN] = A_BETR;
+						display [BUF_UNIT] = A_BETR;
+					}
+					if((display[BUF_UNIT] != 'J') && (display[BUF_TEN] != 'X'))
+					{
+						if((virt[IO_SUB_FUNC]<56) &&(virt[IO_SUB_FUNC]))
+						{
+							if((FloorName[virt[IO_SUB_FUNC]-1][0] !=display [BUF_TEN]) ||(FloorName[virt[IO_SUB_FUNC]-1][1] !=display [BUF_UNIT]))
+							{
+								if((display [BUF_TEN]!=A_BETR) &&(display [BUF_UNIT]!=A_BETR))
+								{
+									FloorName[virt[IO_SUB_FUNC]-1][0] =display [BUF_TEN];
+									FloorName[virt[IO_SUB_FUNC]-1][1] =display [BUF_UNIT];
+									Flash_Write_Bytes(DATA_START_ADDRESS, (uint8_t *)&FloorName, sizeof(FloorName));
+								}
+							}
+						}
+					}
 				}
 			for (i = 0; i < mInOut_Number; i++)
 				{// search output parameter list

@@ -3,5 +3,5 @@ SubProg.c:24:9:Check_InChange	24	static
 SubProg.c:36:6:Init_SPI	4	static
 SubProg.c:40:9:SPI_SendOneByte	24	static,ignoring_inline_asm
 SubProg.c:72:6:ReadInput	24	static,ignoring_inline_asm
-SubProg.c:187:6:Out_Prog	24	static,ignoring_inline_asm
-SubProg.c:245:6:test_mode	40	static
+SubProg.c:188:6:Out_Prog	24	static,ignoring_inline_asm
+SubProg.c:248:6:test_mode	40	static

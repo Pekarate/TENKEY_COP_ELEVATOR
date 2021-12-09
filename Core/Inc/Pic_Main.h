@@ -4,7 +4,9 @@
 
 #include "main.h"
 
-
+#define TOTAL_FLOOR 55
+#define DATA_START_ADDRESS 		 	((uint32_t)0x0801FC00)	//Page 127
+#define LENGTH_START_ADDRESS 		((uint32_t)0x0801F810)	//Page 126
 
 #define	BIT_0			0x01
 #define	BIT_1			0x02
@@ -214,6 +216,7 @@ extern uint8_t pos;
 extern uint8_t	att_alarm_timer;
 extern uint8_t	buz_alarm_timer;
 extern uint8_t	buz_alarm_totaltimer;
+extern char FloorName[TOTAL_FLOOR][2];
 extern void ClrWdt (void);
 #endif
 #endif

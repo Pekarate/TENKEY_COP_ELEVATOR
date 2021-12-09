@@ -29,7 +29,8 @@ Core/Src/Version.o: ../Core/Src/Version.c ../Core/Inc/AllHeader.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h \
  ../Core/Inc/Init.h ../Core/Inc/CanBus.h ../Core/Inc/EEPROM.h \
- ../Core/Inc/Subprog.h ../Core/Inc/Uart.h ../Core/Inc/Version.h
+ ../Core/Inc/Subprog.h ../Core/Inc/Uart.h ../Core/Inc/Version.h \
+ ../Core/Inc/flash.h
 
 ../Core/Inc/AllHeader.h:
 
@@ -108,3 +109,5 @@ Core/Src/Version.o: ../Core/Src/Version.c ../Core/Inc/AllHeader.h \
 ../Core/Inc/Uart.h:
 
 ../Core/Inc/Version.h:
+
+../Core/Inc/flash.h:

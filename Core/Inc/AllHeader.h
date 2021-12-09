@@ -13,3 +13,11 @@
 #include 	"Version.h"
 #include    "main.h"
 #include 	"string.h"
+#include 	"flash.h"
+
+enum {
+	CHAR_G =0,
+	CHAR_B,
+	CHAR_C,
+	CHAR_M
+};

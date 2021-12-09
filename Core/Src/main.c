@@ -24,6 +24,8 @@
 /* USER CODE BEGIN Includes */
 #define	_MAIN_C_
 #include "AllHeader.h"
+#include "flash.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +35,17 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define MAXLONGVALUE 2000000000;
+#define MAXKEYBUFF          	2
+#define KEYTIMOUT            1500				//ms
+#define LEDTIMEOUT     200						//ms
+
+
+
+int Keytimout = INT32_MAX;
+uint32_t lastest_call_time;
+int LedOfftimout = INT32_MAX;
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -71,17 +84,27 @@ uint8_t instate[MAX_IN_BYTE];
 uint8_t instate_Pre[MAX_IN_BYTE];
 uint32_t inold_Pre;
 uint8_t help;
-uint8_t virt_key[3];
+uint8_t virt_key[2] = {0,0};
 uint8_t virt_key_cnt =0;
 
 uint32_t TIM1_inter,TIM2_inter;
 uint32_t TIM1_inter_store,TIM2_inter_store;
 uint32_t time10ms,time500ms =0;
+char FloorName[TOTAL_FLOOR][2] ={0};
+char IOName[13] ={'0','1','2','3','4','5','6','7','8','9','G','B','C'};
+
+uint8_t targetfloor =0;
+uint8_t targetfloor_reg =0;
+uint16_t Led_virt = 0x00;
+
+static uint32_t time1_cnt = 0;
+
+uint32_t inspection_time;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	uint8_t i = 0;
-	static uint8_t time1_cnt = 0;
-	static uint8_t time0_cnt = 0;
+
+	static uint32_t time0_cnt = 0;
 	static uint32_t reloadtime =0;
 	if(htim->Instance == htim1.Instance)
 	{
@@ -89,6 +112,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		time1_cnt++;
 		time10ms = HAL_GetTick() - reloadtime;
 		reloadtime = HAL_GetTick();
+		Keytimout --;
+		LedOfftimout --;
 		if((time1_cnt % 10) == 0)
 			{//100ms
 				bTime.Time_100ms = 1;
@@ -215,6 +240,28 @@ void ClrWdt (void)
 {
 
 }
+int Find_target_Floor(int len)
+{
+	if(len ==1)
+	{
+		virt_key[1] = virt_key[0];
+		virt_key[0] = 0;
+	}
+	else
+	{
+		if(virt_key[0] == '0')
+			virt_key[0] =0;
+	}
+	for(int icc=0;icc<TOTAL_FLOOR;icc++)
+	{
+		if((FloorName[icc][0] == virt_key[0]) && (FloorName[icc][1] == virt_key[1]) )
+		{
+			targetfloor = icc+1;
+			return targetfloor;
+		}
+	}
+	return -1;
+}
 
 /* USER CODE END 0 */
 
@@ -252,12 +299,14 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_Init();
   /* USER CODE BEGIN 2 */
+
+  Flash_Read_Bytes((uint8_t *)&FloorName, DATA_START_ADDRESS, sizeof(FloorName));
+
+ 	//Flash_ReadChar(data,DATA_START_ADDRESS,LENGTH_START_ADDRESS);
+
   HAL_Delay(50);
-//
-//  while(1)
-//  {
-//	  ReadInput();
-//  }
+
+
   	uint8_t i, j;
 
 	if (merker == RC_MERKER)									// restart by after Rx counter error
@@ -314,6 +363,7 @@ int main(void)
 
 	nmtstate = PRE_OP;						// set state pre-operational
 	disp_lift = LIFT1;
+
 	while (nmtstate == PRE_OP)
 	{//�ȴ������������ָ��
 		ClrWdt ();
@@ -363,6 +413,7 @@ int main(void)
 
 	set_io_config ();
 	Arrow_Status();
+	int cntt =0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -416,7 +467,129 @@ int main(void)
 			}
 
 		for(i = 0; i < mMax_InByte; i++)
-	 		instate[i] = in[i] ^ in_polarity[i];		// read input state; invert if desired
+			instate_Pre[i] = in[i] ^ in_polarity[i];		// read input state; invert if desired
+		instate[0] = (instate_Pre[0] & 0x3);      //close and openbutton
+		uint16_t keytmp = (uint16_t)((instate_Pre[0] | ((uint16_t)instate_Pre[1]<<8)) >>2); //BTN start IN3
+		if(inold_Pre != keytmp)
+		{
+			for (i = 0; i < 16; i++)
+			{
+				if((!(keytmp>>i)&0x01) && ((inold_Pre>>i) &0x01))   //now 0,pre 1
+				{
+						Led_virt = (Led_virt|(1<<(i+2))) & 0xFFFC;
+						virt_key[virt_key_cnt] = IOName[i];
+						virt_key_cnt++ ;
+						if ( virt_key_cnt == 2 )
+						{
+							Keytimout = -1;
+						}
+						else
+						{
+							Keytimout = KEYTIMOUT/10;
+							inspection_time = HAL_GetTick();
+						}
+						if(IOName[i] == 'C')
+						{
+							Keytimout = -1;
+						}
+
+				}
+			}
+			inold_Pre = keytmp;
+		}
+		if(LedOfftimout <0)
+		{
+			Led_virt = 0x00;
+			LedOfftimout = INT32_MAX;
+		}
+		if(Keytimout <= 0)
+		{
+			inspection_time = HAL_GetTick() - inspection_time;
+			if((virt_key[0] != 'C') && (virt_key[1] != 'C'))
+			{
+				targetfloor = Find_target_Floor(virt_key_cnt);
+				if((targetfloor !=  0) && (targetfloor < 55))
+				{
+
+					for ( cntt = 0; cntt < mInOut_Number; cntt++)
+					{
+						if (inpar [cntt][IO_BASIC_FUNC] == CAR_CALL)
+						{
+							if(inpar [cntt][IO_SUB_FUNC] == targetfloor)
+							{
+
+								bit_set(instate[cntt/8],cntt%8);
+								lastest_call_time = time1_cnt + KEYTIMOUT/10;
+								break;
+							}
+
+						}
+					}
+					if(cntt == mInOut_Number)
+					{
+						cntt = -1;
+					}
+				}
+			}
+			else
+			{
+				if(virt_key[0] == 'C')
+				{
+					//del target_floor_reg
+					if(time1_cnt < lastest_call_time)
+					{
+						targetfloor = targetfloor_reg;
+					}
+				}
+				else if(virt_key[1] == 'C')
+				{
+					//del target_floor virt_key[1]
+					virt_key_cnt =1;
+					targetfloor = Find_target_Floor(virt_key_cnt);
+				}
+				if(targetfloor>0)
+				{
+					uint8_t outindex ;
+					for ( outindex = 0; outindex < mInOut_Number; outindex++)
+					{
+						if (outpar [outindex][IO_BASIC_FUNC] == CAR_CALL)
+						{
+							if(outpar [outindex][IO_SUB_FUNC] == targetfloor)
+							{
+								break;
+							}
+
+						}
+					}
+					if(outindex != mInOut_Number)
+					{
+						if( bit_select(out[outindex/8],outindex%8))	//alread call
+						{
+							for ( cntt = 0; cntt < mInOut_Number; cntt++)
+							{
+								if (inpar [cntt][IO_BASIC_FUNC] == CAR_CALL)
+								{
+									if(inpar [cntt][IO_SUB_FUNC] == targetfloor)
+									{
+										bit_set(instate[cntt/8],cntt%8);
+										for (j = 0; j < MAX_IO_TYPE; j++)					// write input to virtual input object
+												virt_in [j] = inpar [cntt][j];
+										transmit_in (virt_in);  //tran first package
+										break;
+									}
+
+								}
+							}
+						}
+					}
+				}
+			}
+			virt_key_cnt =0;
+			Keytimout = MAXLONGVALUE;
+			LedOfftimout = LEDTIMEOUT/10;
+			virt_key[0] = 0;
+			virt_key[1] = 0;
+		}
 		if (Check_InChange(instate, inold))					// input state changed
 			{
 				for (i = 0; i < mInOut_Number; i++)
@@ -433,7 +606,16 @@ int main(void)
 											{
 												case (CAR_CALL):						// standard car call
 													if (help)
+													{
 														transmit_in (virt_in);
+														if(cntt >= 0)
+														{
+															bit_reset(instate[cntt/8],cntt%8);
+															targetfloor_reg = targetfloor;
+															targetfloor = -1;
+														}
+
+													}
 													break;
 
 												case (HALL_CALL):						// standard hall call

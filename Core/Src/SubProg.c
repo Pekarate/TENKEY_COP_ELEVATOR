@@ -1,7 +1,7 @@
 
 #define	_SUBPROG_C_
 #include	"AllHeader.h"
-
+extern uint16_t Led_virt;
 
 uint8_t Get_NodeID(void){
 	uint8_t i, dat1 = 0;
@@ -73,7 +73,7 @@ void ReadInput(void){
 //	memcpy((void *)in,(void *)Userin,MAX_IN_BYTE);
 //	return ;
 	uint8_t i, j, temp;
-	uint32_t kCode[3];
+	uint32_t kCode[3] = {0,0,0};
 
 //���ȶ�ȡ��ť�������(һ��22��)
 //	kCode[0] = ((PORTA & 0x0F) |						// PA0~PA3
@@ -104,7 +104,7 @@ void ReadInput(void){
 	__NOP();__NOP();__NOP();__NOP();
 	__NOP();__NOP();__NOP();__NOP();
 	__NOP();__NOP();__NOP();__NOP();
-
+#if 0
 	if(mExtern_Number)
 		{//������չ��
 			kCode[1] = 0x00;
@@ -135,7 +135,7 @@ void ReadInput(void){
 			__NOP();__NOP();__NOP();__NOP();
 //			SSPCON1 = 0x32;
 		}
-
+#endif
 	for (i=0; i<MAX_IN_BYTE; ++i)
 		{	
 			input[2][i] = input[1][i];
@@ -145,7 +145,7 @@ void ReadInput(void){
 	input[0][1] = (uint8_t)(kCode[0] >> 8);
 	input[0][2] = (uint8_t)(kCode[0] >> 16);
 	j = 3;
-
+#if 0
 	switch (mExtern_Number)
 		{
 			case 1:
@@ -172,6 +172,7 @@ void ReadInput(void){
 				j = 9;
 				break;				
 		}
+#endif
 	for (i=0; i<j; ++i)
 		{	
 			if (input[2][i] == input[1][i] && input[1][i] == input[0][i])
@@ -190,8 +191,10 @@ void Out_Prog(void){
 	uint8_t out_state[MAX_IN_BYTE];
 	static uint8_t out_old[MAX_IN_BYTE] = {0xFF,0xFF,0xFF,0,0,0,0,0,0};
 
-	for(i=0; i<mMax_InByte; i++)
+	for(i=2; i<mMax_InByte; i++)
 		out_state[i] = out[i] ^ out_polarity[i];		// read input state; invert if desired
+	out_state[0] = ((out[0]&0x03) | (uint8_t)Led_virt) ^  out_polarity[0];
+	out_state[1] = (uint8_t)(Led_virt>>8) ^  out_polarity[1];
 	if(Check_InChange(out_state, out_old) == 0)	return;
 
 	HC595_LUCK_DIS();
