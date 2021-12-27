@@ -1,6 +1,8 @@
 #TENKEY_COP
 code for stm32f1 using SOFT SPI
+
 BTN list
+
 	XB0   open door
 	XBC   close door
 	XB1   BTN 0

@@ -1,3 +1,5 @@
+#TENKEY_COP
+code for stm32f1 using SOFT SPI
 BTN list
 	XB0   open door
 	XBC   close door
@@ -14,5 +16,7 @@ BTN list
 	XB11  BTN option 1   (G) 
 	XB12  BTN option 2	(B)	
 	XB13  BTN option 3   (C)
-	
+
+XB LEDs are controled by "Led_virt" variable
+
 	
