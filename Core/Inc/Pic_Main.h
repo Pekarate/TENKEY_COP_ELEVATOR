@@ -105,7 +105,7 @@ uint8_t						sdo_timer = 0;					/* timer for SDO segment transfer		*/
 uint8_t	volatile	input [3][MAX_IN_BYTE];						/* input variables for debouncing		*/
 uint8_t 	volatile	in[MAX_IN_BYTE];								/* variable for input after debouncing	*/
 uint8_t						inold[MAX_IN_BYTE];							/* variable to save old input state		*/
-uint8_t 	volatile	out[MAX_IN_BYTE];							/* output state							*/
+uint8_t 	volatile	out[MAX_IN_BYTE] = {0};							/* output state							*/
 uint8_t						in_polarity[MAX_IN_BYTE];					/* input is inverted / not inverted		*/
 
 uint8_t 	mExtern_Number = 0;			//��չ������

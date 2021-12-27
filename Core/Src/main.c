@@ -26,6 +26,7 @@
 #include "AllHeader.h"
 #include "flash.h"
 #include "stdio.h"
+#include "stdlib.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,9 +39,9 @@
 #define MAXLONGVALUE 2000000000;
 #define MAXKEYBUFF          	2
 #define KEYTIMOUT            1500				//ms
-#define LEDTIMEOUT     200						//ms
+#define LEDTIMEOUT     500						//ms
 
-
+#define USER_DEBUG 0
 
 int Keytimout = INT32_MAX;
 uint32_t lastest_call_time;
@@ -56,11 +57,15 @@ int LedOfftimout = INT32_MAX;
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan;
 
+IWDG_HandleTypeDef hiwdg;
+
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart1;
 USART_HandleTypeDef husart2;
+
+WWDG_HandleTypeDef hwwdg;
 
 /* USER CODE BEGIN PV */
 
@@ -74,6 +79,8 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_Init(void);
+static void MX_IWDG_Init(void);
+static void MX_WWDG_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,7 +102,7 @@ char IOName[13] ={'0','1','2','3','4','5','6','7','8','9','G','B','C'};
 
 uint8_t targetfloor =0;
 uint8_t targetfloor_reg =0;
-uint16_t Led_virt = 0x00;
+uint16_t Led_virt = 0xFFFF;
 
 static uint32_t time1_cnt = 0;
 
@@ -238,7 +245,10 @@ void check_hse (uint8_t mode){
 }
 void ClrWdt (void)
 {
-
+#if ! USER_DEBUG
+	HAL_IWDG_Refresh(&hiwdg);
+	HAL_WWDG_Refresh(&hwwdg);
+#endif
 }
 int Find_target_Floor(int len)
 {
@@ -262,7 +272,7 @@ int Find_target_Floor(int len)
 	}
 	return -1;
 }
-
+uint8_t checkwatchdog =0;
 /* USER CODE END 0 */
 
 /**
@@ -273,7 +283,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+  /* USER CODE DBGMCU_CR END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -298,15 +308,28 @@ int main(void)
   MX_TIM2_Init();
   MX_USART1_UART_Init();
   MX_USART2_Init();
+  MX_IWDG_Init();
+  MX_WWDG_Init();
   /* USER CODE BEGIN 2 */
-
+  ClrWdt();							//reset watchdog timer
   Flash_Read_Bytes((uint8_t *)&FloorName, DATA_START_ADDRESS, sizeof(FloorName));
-
+  __HAL_DBGMCU_FREEZE_WWDG();
+  __HAL_DBGMCU_FREEZE_IWDG();
  	//Flash_ReadChar(data,DATA_START_ADDRESS,LENGTH_START_ADDRESS);
 
-  HAL_Delay(50);
+  mMax_InByte =3;
+  memset((void*)out,0xFF,8);
+  Led_virt = 0xFFFF;
+  Out_Prog();
+  for(int ct =0;ct<200;ct++)
+  {
+		  ClrWdt ();
+		  HAL_Delay(1);
+  }
 
-
+  memset((void*)out,0x00,8);
+  Led_virt = 0x00;
+  Out_Prog();
   	uint8_t i, j;
 
 	if (merker == RC_MERKER)									// restart by after Rx counter error
@@ -348,6 +371,7 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim2);
 	while (nmtwait)				// waiting time to 1. heartbeat
 		{
+		 ClrWdt();							//reset watchdog timer
 			if(bTime.Time_10ms)
 				{
 					ReadInput();
@@ -420,6 +444,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  ClrWdt();							//reset watchdog timer
+	  if(checkwatchdog)
+	  {
+		  while(1);
+	  }
 		if (rc)													// Message in receive buffer
 			read_rx ();										// read and handle message
 		if ((!heartbeat) && (hse_heartbeat) && (!bBusOffTimer))	//time to send heartbeat message
@@ -478,6 +507,16 @@ int main(void)
 				{
 						Led_virt = (Led_virt|(1<<(i+2))) & 0xFFFC;
 						virt_key[virt_key_cnt] = IOName[i];
+						virt_in [IO_BASIC_FUNC] = CAR_CALL;
+						virt_in [IO_SUB_FUNC] = 0xCC;
+						virt_in [IO_LIFT] = ~LIFT1;   //remove G664
+						virt_in [IO_FLOOR] = 0;
+						virt_in [IO_DOOR] = 0;
+						virt_in [IO_STATE] = virt_key[virt_key_cnt];
+						virt_in [IO_ENABLE] = 0;
+						virt_in [IO_ACK] = 0;
+
+						transmit_in (virt_in);  //tran first package
 						virt_key_cnt++ ;
 						if ( virt_key_cnt == 2 )
 						{
@@ -508,7 +547,7 @@ int main(void)
 			if((virt_key[0] != 'C') && (virt_key[1] != 'C'))
 			{
 				targetfloor = Find_target_Floor(virt_key_cnt);
-				if((targetfloor !=  0) && (targetfloor < 55))
+				if((targetfloor !=  0) && (targetfloor <= TOTAL_FLOOR))
 				{
 
 					for ( cntt = 0; cntt < mInOut_Number; cntt++)
@@ -658,10 +697,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
@@ -718,6 +758,34 @@ static void MX_CAN_Init(void)
   /* USER CODE BEGIN CAN_Init 2 */
 
   /* USER CODE END CAN_Init 2 */
+
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
+  hiwdg.Init.Reload = 4095;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+
+  /* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -788,7 +856,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 7199;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 499;
+  htim2.Init.Period = 4999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -876,6 +944,36 @@ static void MX_USART2_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief WWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_WWDG_Init(void)
+{
+
+  /* USER CODE BEGIN WWDG_Init 0 */
+
+  /* USER CODE END WWDG_Init 0 */
+
+  /* USER CODE BEGIN WWDG_Init 1 */
+
+  /* USER CODE END WWDG_Init 1 */
+  hwwdg.Instance = WWDG;
+  hwwdg.Init.Prescaler = WWDG_PRESCALER_8;
+  hwwdg.Init.Window = 127;
+  hwwdg.Init.Counter = 127;
+  hwwdg.Init.EWIMode = WWDG_EWI_DISABLE;
+  if (HAL_WWDG_Init(&hwwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN WWDG_Init 2 */
+
+  /* USER CODE END WWDG_Init 2 */
 
 }
 
@@ -968,4 +1066,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
