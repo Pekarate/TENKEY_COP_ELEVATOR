@@ -496,139 +496,139 @@ int main(void)
 			}
 
 		for(i = 0; i < mMax_InByte; i++)
-			instate_Pre[i] = in[i] ^ in_polarity[i];		// read input state; invert if desired
-		instate[0] = (instate_Pre[0] & 0x3);      //close and openbutton
-		uint16_t keytmp = (uint16_t)((instate_Pre[0] | ((uint16_t)instate_Pre[1]<<8)) >>2); //BTN start IN3
-		if(inold_Pre != keytmp)
-		{
-			for (i = 0; i < 16; i++)
-			{
-				if((!(keytmp>>i)&0x01) && ((inold_Pre>>i) &0x01))   //now 0,pre 1
-				{
-						Led_virt = (Led_virt|(1<<(i+2))) & 0xFFFC;
-						virt_key[virt_key_cnt] = IOName[i];
-						virt_in [IO_BASIC_FUNC] = CAR_CALL;
-						virt_in [IO_SUB_FUNC] = 0xCC;
-						virt_in [IO_LIFT] = ~LIFT1;   //remove G664
-						virt_in [IO_FLOOR] = 0;
-						virt_in [IO_DOOR] = 0;
-						virt_in [IO_STATE] = virt_key[virt_key_cnt];
-						virt_in [IO_ENABLE] = 0;
-						virt_in [IO_ACK] = 0;
-
-						transmit_in (virt_in);  //tran first package
-						virt_key_cnt++ ;
-						if ( virt_key_cnt == 2 )
-						{
-							Keytimout = -1;
-						}
-						else
-						{
-							Keytimout = KEYTIMOUT/10;
-							inspection_time = HAL_GetTick();
-						}
-						if(IOName[i] == 'C')
-						{
-							Keytimout = -1;
-						}
-
-				}
-			}
-			inold_Pre = keytmp;
-		}
-		if(LedOfftimout <0)
-		{
-			Led_virt = 0x00;
-			LedOfftimout = INT32_MAX;
-		}
-		if(Keytimout <= 0)
-		{
-			inspection_time = HAL_GetTick() - inspection_time;
-			if((virt_key[0] != 'C') && (virt_key[1] != 'C'))
-			{
-				targetfloor = Find_target_Floor(virt_key_cnt);
-				if((targetfloor !=  0) && (targetfloor <= TOTAL_FLOOR))
-				{
-
-					for ( cntt = 0; cntt < mInOut_Number; cntt++)
-					{
-						if (inpar [cntt][IO_BASIC_FUNC] == CAR_CALL)
-						{
-							if(inpar [cntt][IO_SUB_FUNC] == targetfloor)
-							{
-
-								bit_set(instate[cntt/8],cntt%8);
-								lastest_call_time = time1_cnt + KEYTIMOUT/10;
-								break;
-							}
-
-						}
-					}
-					if(cntt == mInOut_Number)
-					{
-						cntt = -1;
-					}
-				}
-			}
-			else
-			{
-				if(virt_key[0] == 'C')
-				{
-					//del target_floor_reg
-					if(time1_cnt < lastest_call_time)
-					{
-						targetfloor = targetfloor_reg;
-					}
-				}
-				else if(virt_key[1] == 'C')
-				{
-					//del target_floor virt_key[1]
-					virt_key_cnt =1;
-					targetfloor = Find_target_Floor(virt_key_cnt);
-				}
-				if(targetfloor>0)
-				{
-					uint8_t outindex ;
-					for ( outindex = 0; outindex < mInOut_Number; outindex++)
-					{
-						if (outpar [outindex][IO_BASIC_FUNC] == CAR_CALL)
-						{
-							if(outpar [outindex][IO_SUB_FUNC] == targetfloor)
-							{
-								break;
-							}
-
-						}
-					}
-					if(outindex != mInOut_Number)
-					{
-						if( bit_select(out[outindex/8],outindex%8))	//alread call
-						{
-							for ( cntt = 0; cntt < mInOut_Number; cntt++)
-							{
-								if (inpar [cntt][IO_BASIC_FUNC] == CAR_CALL)
-								{
-									if(inpar [cntt][IO_SUB_FUNC] == targetfloor)
-									{
-										bit_set(instate[cntt/8],cntt%8);
-										for (j = 0; j < MAX_IO_TYPE; j++)					// write input to virtual input object
-												virt_in [j] = inpar [cntt][j];
-										transmit_in (virt_in);  //tran first package
-										break;
-									}
-
-								}
-							}
-						}
-					}
-				}
-			}
-			virt_key_cnt =0;
-			Keytimout = MAXLONGVALUE;
-			LedOfftimout = LEDTIMEOUT/10;
-			virt_key[0] = 0;
-			virt_key[1] = 0;
-		}
+			instate[i] = in[i] ^ in_polarity[i];		// read input state; invert if desired
+//		instate[0] = (instate_Pre[0] & 0x3);      //close and openbutton
+//		uint16_t keytmp = (uint16_t)((instate_Pre[0] | ((uint16_t)instate_Pre[1]<<8)) >>2); //BTN start IN3
+//		if(inold_Pre != keytmp)
+//		{
+//			for (i = 0; i < 16; i++)
+//			{
+//				if((!(keytmp>>i)&0x01) && ((inold_Pre>>i) &0x01))   //now 0,pre 1
+//				{
+//						Led_virt = (Led_virt|(1<<(i+2))) & 0xFFFC;
+//						virt_key[virt_key_cnt] = IOName[i];
+//						virt_in [IO_BASIC_FUNC] = CAR_CALL;
+//						virt_in [IO_SUB_FUNC] = 0xCC;
+//						virt_in [IO_LIFT] = ~LIFT1;   //remove G664
+//						virt_in [IO_FLOOR] = 0;
+//						virt_in [IO_DOOR] = 0;
+//						virt_in [IO_STATE] = virt_key[virt_key_cnt];
+//						virt_in [IO_ENABLE] = 0;
+//						virt_in [IO_ACK] = 0;
+//
+//						transmit_in (virt_in);  //tran first package
+//						virt_key_cnt++ ;
+//						if ( virt_key_cnt == 2 )
+//						{
+//							Keytimout = -1;
+//						}
+//						else
+//						{
+//							Keytimout = KEYTIMOUT/10;
+//							inspection_time = HAL_GetTick();
+//						}
+//						if(IOName[i] == 'C')
+//						{
+//							Keytimout = -1;
+//						}
+//
+//				}
+//			}
+//			inold_Pre = keytmp;
+//		}
+//		if(LedOfftimout <0)
+//		{
+//			Led_virt = 0x00;
+//			LedOfftimout = INT32_MAX;
+//		}
+//		if(Keytimout <= 0)
+//		{
+//			inspection_time = HAL_GetTick() - inspection_time;
+//			if((virt_key[0] != 'C') && (virt_key[1] != 'C'))
+//			{
+//				targetfloor = Find_target_Floor(virt_key_cnt);
+//				if((targetfloor !=  0) && (targetfloor <= TOTAL_FLOOR))
+//				{
+//
+//					for ( cntt = 0; cntt < mInOut_Number; cntt++)
+//					{
+//						if (inpar [cntt][IO_BASIC_FUNC] == CAR_CALL)
+//						{
+//							if(inpar [cntt][IO_SUB_FUNC] == targetfloor)
+//							{
+//
+//								bit_set(instate[cntt/8],cntt%8);
+//								lastest_call_time = time1_cnt + KEYTIMOUT/10;
+//								break;
+//							}
+//
+//						}
+//					}
+//					if(cntt == mInOut_Number)
+//					{
+//						cntt = -1;
+//					}
+//				}
+//			}
+//			else
+//			{
+//				if(virt_key[0] == 'C')
+//				{
+//					//del target_floor_reg
+//					if(time1_cnt < lastest_call_time)
+//					{
+//						targetfloor = targetfloor_reg;
+//					}
+//				}
+//				else if(virt_key[1] == 'C')
+//				{
+//					//del target_floor virt_key[1]
+//					virt_key_cnt =1;
+//					targetfloor = Find_target_Floor(virt_key_cnt);
+//				}
+//				if(targetfloor>0)
+//				{
+//					uint8_t outindex ;
+//					for ( outindex = 0; outindex < mInOut_Number; outindex++)
+//					{
+//						if (outpar [outindex][IO_BASIC_FUNC] == CAR_CALL)
+//						{
+//							if(outpar [outindex][IO_SUB_FUNC] == targetfloor)
+//							{
+//								break;
+//							}
+//
+//						}
+//					}
+//					if(outindex != mInOut_Number)
+//					{
+//						if( bit_select(out[outindex/8],outindex%8))	//alread call
+//						{
+//							for ( cntt = 0; cntt < mInOut_Number; cntt++)
+//							{
+//								if (inpar [cntt][IO_BASIC_FUNC] == CAR_CALL)
+//								{
+//									if(inpar [cntt][IO_SUB_FUNC] == targetfloor)
+//									{
+//										bit_set(instate[cntt/8],cntt%8);
+//										for (j = 0; j < MAX_IO_TYPE; j++)					// write input to virtual input object
+//												virt_in [j] = inpar [cntt][j];
+//										transmit_in (virt_in);  //tran first package
+//										break;
+//									}
+//
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
+//			virt_key_cnt =0;
+//			Keytimout = MAXLONGVALUE;
+//			LedOfftimout = LEDTIMEOUT/10;
+//			virt_key[0] = 0;
+//			virt_key[1] = 0;
+//		}
 		if (Check_InChange(instate, inold))					// input state changed
 			{
 				for (i = 0; i < mInOut_Number; i++)
@@ -647,12 +647,13 @@ int main(void)
 													if (help)
 													{
 														transmit_in (virt_in);
-														if(cntt >= 0)
-														{
-															bit_reset(instate[cntt/8],cntt%8);
-															targetfloor_reg = targetfloor;
-															targetfloor = -1;
-														}
+//														bit_reset(instate[i/8],i%8);
+//														if(cntt >= 0)
+//														{
+//															bit_reset(instate[cntt/8],cntt%8);
+//															targetfloor_reg = targetfloor;
+//															targetfloor = -1;
+//														}
 
 													}
 													break;

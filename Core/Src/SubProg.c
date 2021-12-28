@@ -185,16 +185,17 @@ void ReadInput(void){
 	1������ź�: ֻ����70����ť�ƣ�������2����վ�ӣ�1�����ط���������������ĳ�����
 	2���ߵ�ƽ����
 ==============================================================================================*/
+static uint8_t out_old[MAX_IN_BYTE] = {0,0,0,0,0,0,0,0,0};
 void Out_Prog(void){
 	uint8_t i, j, temp;
 	uint16_t shift = 0;
 	uint8_t out_state[MAX_IN_BYTE];
-	static uint8_t out_old[MAX_IN_BYTE] = {0,0,0,0,0,0,0,0,0};
 
-	for(i=2; i<mMax_InByte; i++)
+
+	for(i=0; i<mMax_InByte; i++)
 		out_state[i] = out[i] ^ out_polarity[i];		// read input state; invert if desired
-	out_state[0] = ((out[0]&0x03) | (uint8_t)Led_virt) ^  out_polarity[0];
-	out_state[1] = (uint8_t)(Led_virt>>8) ^  out_polarity[1];
+//	out_state[0] = ((out[0]&0x03) | (uint8_t)Led_virt) ^  out_polarity[0];
+//	out_state[1] = (uint8_t)(Led_virt>>8) ^  out_polarity[1];
 	if(Check_InChange(out_state, out_old) == 0)	return;
 
 	HC595_LUCK_DIS();
