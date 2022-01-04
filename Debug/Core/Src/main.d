@@ -26,13 +26,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h \
  ../Core/Inc/AllHeader.h ../Core/Inc/Dict.h ../Core/Inc/CANOPEN.H \
  ../Core/Inc/Bootloader.h ../Core/Inc/Pic_Main.h ../Core/Inc/main.h \
  ../Core/Inc/Init.h ../Core/Inc/CanBus.h ../Core/Inc/EEPROM.h \
  ../Core/Inc/Subprog.h ../Core/Inc/Uart.h ../Core/Inc/Version.h \
- ../Core/Inc/flash.h ../Core/Inc/flash.h
+ ../Core/Inc/flash.h ../Core/Inc/flash.h ../Core/Src/Dwin_App.h
 
 ../Core/Inc/main.h:
 
@@ -90,8 +89,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
 
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h:
-
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h:
 
 ../Core/Inc/AllHeader.h:
@@ -121,3 +118,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/flash.h:
 
 ../Core/Inc/flash.h:
+
+../Core/Src/Dwin_App.h:

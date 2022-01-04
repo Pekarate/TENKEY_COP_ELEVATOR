@@ -6,7 +6,11 @@
 /* High priority interrupt routine																*/
 /************************************************************************************************/
 extern CAN_HandleTypeDef hcan;
-
+extern uint8_t aBCAN_ReceiveBuf_Clock[8];
+extern uint8_t aBCAN_ReceiveBuf_Clock_old[8];
+extern uint8_t Callstatus[8] ;
+extern uint8_t Callstatus_old[8] ;
+extern uint8_t Arrow_state;
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	uint8_t Can1RxData[8] = {0};
@@ -193,6 +197,17 @@ void Init_Can (void){
 	}
 	sFilterConfig.FilterBank = 4;
 	sFilterConfig.FilterIdHigh = (MPDO << 8) +(EMS_ID << 5);
+	sFilterConfig.FilterIdLow = 0x00;
+	sFilterConfig.FilterMaskIdHigh =0xF000;
+	sFilterConfig.FilterMaskIdLow = 0x0000;
+
+	if(HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+	{
+	/* Filter configuration Error */
+		Error_Handler();
+	}
+	sFilterConfig.FilterBank = 5;
+	sFilterConfig.FilterIdHigh = FC_D << 8;
 	sFilterConfig.FilterIdLow = 0x00;
 	sFilterConfig.FilterMaskIdHigh =0xF000;
 	sFilterConfig.FilterMaskIdLow = 0x0000;
@@ -527,6 +542,18 @@ void read_rx (void){
 					}
 				break;
 
+			case FC_D:				//Clock
+				if (EMS_ID == rx [ro][1])
+					{
+						for( int i=0; i<4; i++)
+							{
+								aBCAN_ReceiveBuf_Clock[i] = rx [ro][2 + i];
+								aBCAN_ReceiveBuf_Clock[i + 4] = rx [ro][6 + i];
+							}
+
+					}
+				break;
+
 //����Ϣ��ʱֻ������ͣ�����״̬��Ϣ		2017-11-15		
 			case (MPDO) :					// time stamp message
 				sub = rx [ro][1];
@@ -814,9 +841,22 @@ void set_output (uint8_t *virt){
 				  					}
 								}
 						}
+					memset(Callstatus,0,8);
 				}
 			else
 				{// set or reset single call
+
+					if (iotype == CAR_CALL)
+					{
+						if (virt [IO_STATE] & 0x01)
+						{
+							bit_set (Callstatus[(i-1)/8], (i-1)%8);
+						}
+						else
+						{
+							bit_reset (Callstatus[(i-1)/8], (i-1)%8);
+						}
+					}
 					for (i = 0; i < mInOut_Number; i++)
 						{// search output parameter list
 							if (virt [IO_BASIC_FUNC] == outpar [i][IO_BASIC_FUNC])
@@ -926,11 +966,22 @@ void set_output (uint8_t *virt){
 	else if ((iotype == DIRECTION_IND) && (virt [IO_LIFT] == disp_lift))
 		{//�����
 			if (!virt [IO_STATE] & 0x01)
+			{
 				display[BUF_ARROW] &= 0xF0;
+				Arrow_state = 0;
+			}
 			else
+			{
 				display[BUF_ARROW] = (display[BUF_ARROW] & 0xF0) | ((virt [IO_SUB_FUNC] & 0x03) | ((virt [IO_SUB_FUNC] >> 2) & 0x0C));
+				Arrow_state =(virt [IO_SUB_FUNC] & 0x33);
+			}
 			if ((display[BUF_ARROW] & 0x03) > 2)
+			{
 				display[BUF_ARROW] &= 0xF0;
+				Arrow_state =0;
+			}
+
+
 		}
 	else if((iotype == LIGHT_FUNC) &&
 			(sub & (HALL_LANTERN_UP | HALL_LANTERN_DN | DIRECTION_IND_UP | DIRECTION_IND_DN)))

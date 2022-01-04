@@ -1,6 +1,4 @@
-Core/Src/CanBus.o: ../Core/Src/CanBus.c ../Core/Inc/AllHeader.h \
- ../Core/Inc/Dict.h ../Core/Inc/CANOPEN.H ../Core/Inc/Bootloader.h \
- ../Core/Inc/Pic_Main.h ../Core/Inc/main.h \
+Core/Src/Dwin.o: ../Core/Src/Dwin.c ../Core/Src/Dwin.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -29,19 +27,13 @@ Core/Src/CanBus.o: ../Core/Src/CanBus.c ../Core/Inc/AllHeader.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h \
+ ../Core/Inc/AllHeader.h ../Core/Inc/Dict.h ../Core/Inc/CANOPEN.H \
+ ../Core/Inc/Bootloader.h ../Core/Inc/Pic_Main.h ../Core/Inc/main.h \
  ../Core/Inc/Init.h ../Core/Inc/CanBus.h ../Core/Inc/EEPROM.h \
  ../Core/Inc/Subprog.h ../Core/Inc/Uart.h ../Core/Inc/Version.h \
  ../Core/Inc/flash.h
 
-../Core/Inc/AllHeader.h:
-
-../Core/Inc/Dict.h:
-
-../Core/Inc/CANOPEN.H:
-
-../Core/Inc/Bootloader.h:
-
-../Core/Inc/Pic_Main.h:
+../Core/Src/Dwin.h:
 
 ../Core/Inc/main.h:
 
@@ -100,6 +92,18 @@ Core/Src/CanBus.o: ../Core/Src/CanBus.c ../Core/Inc/AllHeader.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h:
+
+../Core/Inc/AllHeader.h:
+
+../Core/Inc/Dict.h:
+
+../Core/Inc/CANOPEN.H:
+
+../Core/Inc/Bootloader.h:
+
+../Core/Inc/Pic_Main.h:
+
+../Core/Inc/main.h:
 
 ../Core/Inc/Init.h:
 

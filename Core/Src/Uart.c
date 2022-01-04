@@ -34,6 +34,7 @@ void Display_device(void){
 	for (i=0; i<4; ++i)
 		checksum += mDisp_buf[i];
 	mDisp_buf[4] = checksum;
+
 	UART_SendBuf(mDisp_buf, 5);
 }
 

@@ -1,4 +1,6 @@
 "./Core/Src/CanBus.o"
+"./Core/Src/Dwin.o"
+"./Core/Src/Dwin_App.o"
 "./Core/Src/Init.o"
 "./Core/Src/MyDrict.o"
 "./Core/Src/OLd_Main.o"
@@ -29,5 +31,4 @@
 "./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.o"
 "./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.o"
 "./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.o"
-"./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_usart.o"
 "./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_wwdg.o"

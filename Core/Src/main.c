@@ -27,6 +27,7 @@
 #include "flash.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "Dwin_App.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +44,7 @@
 
 #define USER_DEBUG 0
 
-int Keytimout = INT32_MAX;
+static int Keytimout = INT32_MAX;
 uint32_t lastest_call_time;
 int LedOfftimout = INT32_MAX;
 
@@ -63,7 +64,7 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart1;
-USART_HandleTypeDef husart2;
+UART_HandleTypeDef huart2;
 
 WWDG_HandleTypeDef hwwdg;
 
@@ -78,7 +79,7 @@ static void MX_CAN_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_USART2_Init(void);
+static void MX_USART2_UART_Init(void);
 static void MX_IWDG_Init(void);
 static void MX_WWDG_Init(void);
 /* USER CODE BEGIN PFP */
@@ -91,7 +92,7 @@ uint8_t instate[MAX_IN_BYTE];
 uint8_t instate_Pre[MAX_IN_BYTE];
 uint32_t inold_Pre;
 uint8_t help;
-uint8_t virt_key[2] = {0,0};
+static uint8_t virt_key[2] = {0,0};
 uint8_t virt_key_cnt =0;
 
 uint32_t TIM1_inter,TIM2_inter;
@@ -99,7 +100,8 @@ uint32_t TIM1_inter_store,TIM2_inter_store;
 uint32_t time10ms,time500ms =0;
 char FloorName[TOTAL_FLOOR][2] ={0};
 char IOName[13] ={'0','1','2','3','4','5','6','7','8','9','G','B','C'};
-
+uint8_t aBCAN_ReceiveBuf_Clock[8];
+uint8_t aBCAN_ReceiveBuf_Clock_old[8];
 uint8_t targetfloor =0;
 uint8_t targetfloor_reg =0;
 uint16_t Led_virt = 0xFFFF;
@@ -107,6 +109,12 @@ uint16_t Led_virt = 0xFFFF;
 static uint32_t time1_cnt = 0;
 
 uint32_t inspection_time;
+uint8_t Time10s =1;
+uint8_t Callstatus[8] ={0,0,0,0,0,0,0,0};
+uint8_t Callstatus_old[8] = {0,0,0,0,0,0,0,0};
+uint8_t Arrow_state;
+extern _Message User_Message ;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	uint8_t i = 0;
@@ -138,7 +146,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		if((time1_cnt % 200) == 0)
 			bTime.Time_2s = 1;
 	}
-	else if(htim->Instance == htim2.Instance)
+	else if(htim->Instance == htim2.Instance)  // 500ms
 	{
 					bTime.Time_500ms = true;
 					bTime.flash_floor_500ms = true;
@@ -161,7 +169,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 								bFunc.hsecheck = true; 	// HSE check necessary
 						}
 					if((time0_cnt % 10) == 0)
+					{
 						bTime.Time_5s = 1;
+						if((time0_cnt % 20) == 0)
+						{
+							Time10s = 1;
+						}
+					}
 					if(att_alarm_timer)
 						{
 							--att_alarm_timer;
@@ -272,6 +286,7 @@ int Find_target_Floor(int len)
 	}
 	return -1;
 }
+
 uint8_t checkwatchdog =0;
 /* USER CODE END 0 */
 
@@ -283,7 +298,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-  /* USER CODE DBGMCU_CR END 1 */
+  /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -307,7 +322,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
-  MX_USART2_Init();
+  MX_USART2_UART_Init();
   MX_IWDG_Init();
   MX_WWDG_Init();
   /* USER CODE BEGIN 2 */
@@ -382,7 +397,6 @@ int main(void)
 
 	Init_Can();
 
-
 	heartbeat = HEARTBEAT_TIME;
 
 	nmtstate = PRE_OP;						// set state pre-operational
@@ -445,10 +459,6 @@ int main(void)
   while (1)
   {
 	  ClrWdt();							//reset watchdog timer
-	  if(checkwatchdog)
-	  {
-		  while(1);
-	  }
 		if (rc)													// Message in receive buffer
 			read_rx ();										// read and handle message
 		if ((!heartbeat) && (hse_heartbeat) && (!bBusOffTimer))	//time to send heartbeat message
@@ -464,6 +474,8 @@ int main(void)
 
 		if(bTime.Time_100ms)
 			{
+			 	 Dwin_Change_Current_FloorName((char *)display);
+
 				Display_device();			//100ms ����һ����ʾ��Ϣ
 				if(!(buzzer & BUZ_WORKING))
 					Disable_BUZ();
@@ -490,11 +502,19 @@ int main(void)
 			}
 		if(bTime.Time_10ms)
 			{
+				DWIN_Message_Process();
+				DWin_Calltable_Process();
+				DWIN_Arrow_Process();
 				ReadInput();		//��ȡ���еİ�ť����
 				Out_Prog(); 					//�������е����(������ʾ���)
 				bTime.Time_10ms = 0;
 			}
-
+		if(Time10s)
+		{
+			Dwin_update_time();
+			Dwin_switch_to_next_page();
+			Time10s = 0;
+		}
 		for(i = 0; i < mMax_InByte; i++)
 			instate_Pre[i] = in[i] ^ in_polarity[i];		// read input state; invert if desired
 		instate[0] = (instate_Pre[0] & 0x3);      //close and openbutton
@@ -505,18 +525,9 @@ int main(void)
 			{
 				if((!(keytmp>>i)&0x01) && ((inold_Pre>>i) &0x01))   //now 0,pre 1
 				{
+						DWIN_add_key(IOName[i]);
 						Led_virt = (Led_virt|(1<<(i+2))) & 0xFFFC;
 						virt_key[virt_key_cnt] = IOName[i];
-						virt_in [IO_BASIC_FUNC] = CAR_CALL;
-						virt_in [IO_SUB_FUNC] = 0xCC;
-						virt_in [IO_LIFT] = ~LIFT1;   //remove G664
-						virt_in [IO_FLOOR] = 0;
-						virt_in [IO_DOOR] = 0;
-						virt_in [IO_STATE] = virt_key[virt_key_cnt];
-						virt_in [IO_ENABLE] = 0;
-						virt_in [IO_ACK] = 0;
-
-						transmit_in (virt_in);  //tran first package
 						virt_key_cnt++ ;
 						if ( virt_key_cnt == 2 )
 						{
@@ -531,7 +542,6 @@ int main(void)
 						{
 							Keytimout = -1;
 						}
-
 				}
 			}
 			inold_Pre = keytmp;
@@ -918,7 +928,7 @@ static void MX_USART1_UART_Init(void)
   * @param None
   * @retval None
   */
-static void MX_USART2_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
@@ -928,16 +938,15 @@ static void MX_USART2_Init(void)
   /* USER CODE BEGIN USART2_Init 1 */
 
   /* USER CODE END USART2_Init 1 */
-  husart2.Instance = USART2;
-  husart2.Init.BaudRate = 115200;
-  husart2.Init.WordLength = USART_WORDLENGTH_8B;
-  husart2.Init.StopBits = USART_STOPBITS_1;
-  husart2.Init.Parity = USART_PARITY_NONE;
-  husart2.Init.Mode = USART_MODE_TX_RX;
-  husart2.Init.CLKPolarity = USART_POLARITY_LOW;
-  husart2.Init.CLKPhase = USART_PHASE_1EDGE;
-  husart2.Init.CLKLastBit = USART_LASTBIT_DISABLE;
-  if (HAL_USART_Init(&husart2) != HAL_OK)
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
