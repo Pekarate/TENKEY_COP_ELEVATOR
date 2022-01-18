@@ -134,3 +134,4 @@ void Flash_ProgramPage(char* dataIn, uint32_t addr1, uint32_t addr2)
 	//FLASH_Program HalfWord
 	Flash_Write_Char(addr2,tempbuf);
 }
+

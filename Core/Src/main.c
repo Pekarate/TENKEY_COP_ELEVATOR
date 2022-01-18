@@ -287,7 +287,13 @@ int Find_target_Floor(int len)
 	return -1;
 }
 
-uint8_t checkwatchdog =0;
+uint8_t Clear_Flash =0;
+void Flash_Clear_Floor_Name()
+{
+	memset(FloorName,'+',sizeof(FloorName));
+	Flash_Write_Bytes(DATA_START_ADDRESS,(uint8_t *)&FloorName,  sizeof(FloorName));
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -458,6 +464,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(Clear_Flash)
+	  {
+		  Flash_Clear_Floor_Name();
+		  Clear_Flash =0;
+	  }
 	  ClrWdt();							//reset watchdog timer
 		if (rc)													// Message in receive buffer
 			read_rx ();										// read and handle message
