@@ -11,6 +11,7 @@ extern uint8_t aBCAN_ReceiveBuf_Clock_old[8];
 extern uint8_t Callstatus[8] ;
 extern uint8_t Callstatus_old[8] ;
 extern uint8_t Arrow_state;
+extern uint32_t display_message;
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	uint8_t Can1RxData[8] = {0};
@@ -813,7 +814,7 @@ uint8_t fire_alarm = 0;
 uint8_t fire_evacuation = 0;
 uint8_t fire_state = 0;
 
-//set special outputs
+//set special outputs SPECIAL_FUNC
 void set_output (uint8_t *virt){
 	uint8_t i;
 	uint8_t iotype;
@@ -1067,15 +1068,21 @@ void set_output (uint8_t *virt){
 						}
 				}
 		}
-	else if((iotype == SPECIAL_FUNC) || (iotype == FIRE_FUNCTION))
+	else if((iotype == SPECIAL_FUNC) || (iotype == FIRE_FUNCTION)|| (iotype == CALL_TYPE))
 		{//���⹦��
 			switch(sub)
 				{
 					case OUT_OF_ORDER:
 						if(virt[IO_STATE])
+						{
 							display[BUF_ARROW] |= OUT_OF_SERVICE;
+							display_message |= ERROR_OUTOFORDER;
+						}
 						else
+						{
+							display_message &= ~ERROR_OUTOFORDER;
 							display[BUF_ARROW] &= ~OUT_OF_SERVICE;
+						}
 						break;
 
 					case UPS_EVAC_READY_SPEAKER:
@@ -1100,12 +1107,14 @@ void set_output (uint8_t *virt){
 								if(sub == OVER_LOAD_STATE)
 									display[BUF_ARROW] |= OVER_LOAD;
 								buzzer |= BUZ_WORKING;
+								display_message |= ERROR_OVERLOAD;
 							}
 						else
 							{
 								if(sub == OVER_LOAD_STATE)
 									display[BUF_ARROW] &= ~OVER_LOAD;
 								buzzer &= ~BUZ_WORKING;
+								display_message &= ~ERROR_OVERLOAD;
 							}
 						break;
 						
@@ -1125,11 +1134,17 @@ void set_output (uint8_t *virt){
 									break;
 							}
 						if(fire_alarm | fire_evacuation | fire_state)
-							display[BUF_ARROW] |= FIRE_CASE;
+							{
+								display[BUF_ARROW] |= FIRE_CASE;
+								display_message |= ERROR_FIRECASE;
+							}
 						else
-							display[BUF_ARROW] &= ~FIRE_CASE;
-						break;
+							{
+								display[BUF_ARROW] &= ~FIRE_CASE;
+								display_message &= ~ERROR_FIRECASE;
+							}
 
+						break;
 					case ATT_BUZ_ALARM:				
 						if(virt[IO_STATE])
 							{						
@@ -1145,13 +1160,26 @@ void set_output (uint8_t *virt){
 							}
 						break;					
 						
-					case FULL_LOAD_STATE: 					
+					case FULL_LOAD_STATE:
+					case OCCUPIED:
 						if(virt[IO_STATE])
+						{
 							display[BUF_MESSAGE] |= FULLLOAD;
+							display_message |= ERROR_FULLLOAD;
+						}
 						else
+						{
+							display_message &= ~ERROR_FULLLOAD;
 							display[BUF_MESSAGE] &= ~FULLLOAD;
+						}
 						break;		
-
+					case UPS_EVACUATION:
+					case EVACUATION_ACTIVE:
+						if(virt[IO_STATE])
+							display_message |= ERROR_EMERGENCY;
+						else
+							display_message &= ~ERROR_EMERGENCY;
+						break;
 					default:
 						if(sub == DOOR_STOP)
 							{

@@ -112,7 +112,7 @@ uint32_t inspection_time;
 uint8_t Time10s =1;
 uint8_t Callstatus[8] ={0,0,0,0,0,0,0,0};
 uint8_t Callstatus_old[8] = {0,0,0,0,0,0,0,0};
-uint8_t Arrow_state;
+uint8_t Arrow_state = 0;
 extern _Message User_Message ;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -570,7 +570,9 @@ int main(void)
 				targetfloor = Find_target_Floor(virt_key_cnt);
 				if((targetfloor !=  0) && (targetfloor <= TOTAL_FLOOR))
 				{
-
+					char mes[30];
+					sprintf(mes,"PLEASE ENTER DESTINATION FLOOR");
+					DWIN_show_message(mes, 2000);
 					for ( cntt = 0; cntt < mInOut_Number; cntt++)
 					{
 						if (inpar [cntt][IO_BASIC_FUNC] == CAR_CALL)
@@ -589,6 +591,12 @@ int main(void)
 					{
 						cntt = -1;
 					}
+				}
+				else
+				{
+					char mes[30];
+					sprintf(mes,"   NO SERVICE FLOOR");
+					DWIN_show_message(mes, 2000);
 				}
 			}
 			else

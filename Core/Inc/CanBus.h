@@ -6,6 +6,55 @@
 #define	RX_SIZE		8
 #define	TX_SIZE		8
 
+
+#define	MBIT_0		0x00000001
+#define	MBIT_1		0x00000002
+#define	MBIT_2		0x00000004
+#define	MBIT_3		0x00000008
+#define	MBIT_4		0x00000010
+#define	MBIT_5		0x00000020
+#define	MBIT_6		0x00000040
+#define	MBIT_7		0x00000080
+#define	MBIT_8		0x00000100
+#define	MBIT_9		0x00000200
+#define	MBIT_10	0x00000400
+#define	MBIT_11	0x00000800
+#define	MBIT_12	0x00001000
+#define	MBIT_13	0x00002000
+#define	MBIT_14	0x00004000
+#define	MBIT_15	0x00008000
+#define	MBIT_16	0x00010000
+#define	MBIT_17	0x00020000
+#define	MBIT_18	0x00040000
+#define	MBIT_19	0x00080000
+#define	MBIT_20	0x00100000
+#define	MBIT_21	0x00200000
+#define	MBIT_22	0x00400000
+#define	MBIT_23	0x00800000
+#define	MBIT_24	0x01000000
+#define	MBIT_25	0x02000000
+#define	MBIT_26	0x04000000
+#define	MBIT_27	0x08000000
+#define	MBIT_28	0x10000000
+#define	MBIT_29	0x20000000
+#define	MBIT_30	0x40000000
+#define	MBIT_31	0x80000000
+
+#define	ERROR_FIRECASE			MBIT_0
+#define	ERROR_EMERGENCY		MBIT_1
+#define	ERROR_OVERLOAD		MBIT_2
+#define	ERROR_OUTOFORDER	MBIT_3
+#define	ERROR_GENEFAULT		MBIT_4
+#define	ERROR_INSPECTION		MBIT_5
+#define	ERROR_FULLLOAD			MBIT_6
+#define	ERROR_VIPRUN				MBIT_7
+#define	ERROR_PRIORITY			MBIT_8
+#define	ERROR_REMOTEOFF			MBIT_10
+#define	ERROR_SPECIALMODE		MBIT_11
+#define	ERROR_EARTHQUAKE			MBIT_12
+#define	ERROR_ATTENDANCE		MBIT_13
+
+
 #define SDO_TIMER			0x0A						/* time out for SDO segment transfer	*/
 
 /************************************************************************************************/

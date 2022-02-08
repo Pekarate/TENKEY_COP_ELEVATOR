@@ -46,8 +46,12 @@
 typedef struct
 {
 	char Data[50];
+	uint8_t IsChange;
+	uint8_t IsActive;
 	uint8_t  DataSize;
-	uint32_t Timeshow;
+	uint32_t Timeshow;	//show time
+	uint32_t DelayTime;  //time delay to show
+
 }_Message;
 
 void Dwin_Change_Current_FloorName(char * flName);
@@ -57,4 +61,6 @@ void DWin_Calltable_Process(void);
 void DWIN_Arrow_Process(void);
 void DWIN_Message_Process(void);
 void DWIN_add_key(uint8_t key);
+void DWIN_show_message(char *Message, uint32_t time);
+void DWIN_Reset_show_message(void);
 #endif /* SRC_DWIN_APP_H_ */

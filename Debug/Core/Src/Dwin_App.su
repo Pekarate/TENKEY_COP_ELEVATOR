@@ -1,7 +1,9 @@
-Dwin_App.c:28:6:Dwin_Change_Current_FloorName	40	static
-Dwin_App.c:58:6:Dwin_switch_to_next_page	32	static
-Dwin_App.c:73:6:Dwin_update_time	32	static
-Dwin_App.c:123:6:DWin_Calltable_Process	120	static
-Dwin_App.c:235:6:DWIN_Arrow_Process	112	static
-Dwin_App.c:283:6:DWIN_add_key	16	static
-Dwin_App.c:304:6:DWIN_Message_Process	112	static
+Dwin_App.c:31:6:Dwin_Change_Current_FloorName	40	static
+Dwin_App.c:61:6:Dwin_switch_to_next_page	32	static
+Dwin_App.c:76:6:Dwin_update_time	32	static
+Dwin_App.c:126:6:DWin_Calltable_Process	120	static
+Dwin_App.c:238:6:DWIN_Arrow_Process	112	static
+Dwin_App.c:286:6:DWIN_show_message	16	static
+Dwin_App.c:292:6:DWIN_Reset_show_message	8	static
+Dwin_App.c:298:6:DWIN_add_key	16	static
+Dwin_App.c:320:6:DWIN_Message_Process	112	static

@@ -24,7 +24,10 @@ uint16_t FloorName_Registed_Page;
 uint32_t FloorName_Registed_Time;
 
 _Message User_Message = {0};
+uint32_t display_message = 0;
 
+char Textmessage[50]= "PLEASE ENTER DESTINATION FLOOR";
+char TextErrmessage[50]= "PLEASE ENTER DESTINATION FLOOR";
 void Dwin_Change_Current_FloorName(char * flName)
 {
 	uint8_t Buf[20] = {0};
@@ -234,7 +237,7 @@ void DWin_Calltable_Process(void)
 }
 void DWIN_Arrow_Process(void)
 {
-	static uint8_t Arrow_state_old;
+	static uint8_t Arrow_state_old = 1;
 	uint8_t arrow;
 	uint8_t Buf[100] = {0};
 	if(Arrow_state_old == Arrow_state)
@@ -280,8 +283,21 @@ void DWIN_Arrow_Process(void)
 static uint8_t virt_key[2] = {0x20,0x20};
 static uint8_t virt_key_cnt =0;
 uint32_t Keytimout=0;
+void DWIN_show_message(char *Message, uint32_t time)
+{
+	User_Message.DataSize = sprintf(User_Message.Data,Message);
+	User_Message.Timeshow = time;
+	User_Message.IsChange = 1;
+}
+void DWIN_Reset_show_message(void)
+{
+	User_Message.DataSize = sprintf(User_Message.Data," ");
+	User_Message.Timeshow = 0;
+	User_Message.IsChange = 0;
+}
 void DWIN_add_key(uint8_t key)
 {
+	DWIN_Reset_show_message();
 	if (key!= 'C')
 	{
 		virt_key[virt_key_cnt] =key;
@@ -300,30 +316,126 @@ void DWIN_add_key(uint8_t key)
 		Keytimout = 0;
 	}
 }
-
+static uint32_t display_message_old;
 void DWIN_Message_Process(void)
 {
+	static uint32_t Message_Time=0;
 	static uint8_t virt_key_old[2];
 	uint8_t Buf[100] = {0};
+
+
+	if(display_message_old != display_message)
+	{
+		display_message_old = display_message;
+		DWIN_Reset_show_message();
+		if(display_message_old)
+		{
+			if(display_message_old & ERROR_FIRECASE)
+			{
+				sprintf(TextErrmessage,"   ERROR_FIRECASE");
+
+			}
+			if(display_message_old & ERROR_EMERGENCY)
+			{
+				sprintf(TextErrmessage,"   ERROR_EMERGENCY");
+			}
+			if(display_message_old & ERROR_OVERLOAD)
+			{
+				sprintf(TextErrmessage,"   ERROR_OVERLOAD");
+			}
+			if(display_message_old & ERROR_OUTOFORDER)
+			{
+				sprintf(TextErrmessage,"    OUT OF ORDER");
+			}
+			if(display_message_old & ERROR_GENEFAULT)
+			{
+				sprintf(TextErrmessage,"   ERROR_GENEFAULT");
+			}
+			if(display_message_old & ERROR_INSPECTION)
+			{
+				sprintf(TextErrmessage,"   ERROR_INSPECTION");
+			}
+			if(display_message_old & ERROR_FULLLOAD)
+			{
+				sprintf(TextErrmessage,"   ERROR_FULLLOAD");
+			}
+			if(display_message_old & ERROR_VIPRUN)
+			{
+				sprintf(TextErrmessage,"   ERROR_VIPRUN");
+			}
+		}
+		else
+		{
+
+			sprintf(TextErrmessage," ");
+			sprintf(Textmessage,"PLEASE ENTER DESTINATION FLOOR");
+
+		}
+		Keytimout = 0;
+	}
+	if(User_Message.Timeshow)
+	{
+		if(User_Message.IsChange)
+		{
+			User_Message.IsChange = 0;
+			Message_Time = HAL_GetTick()+ User_Message.Timeshow;
+//			memcpy(Textmessageold,Textmessage,50);
+			sprintf((char *)Textmessage,User_Message.Data);   //show message
+
+			Keytimout = 0;
+//			Dwin_Write_VP(0x1500,Buf,15);     //write buf to VP
+//			virt_key_cnt =0;
+//			Buf[0]=00;
+//			Buf[1]=0x20;
+//			Buf[2]=00;
+//			Buf[3]=0x20;
+//			virt_key_old[0] = virt_key[0] = 0x20;
+//			virt_key_old[1] = virt_key[1] = 0x20;
+//			Dwin_Write_VP(0x1100,Buf,2);        //clear floor call
+		}
+
+		if((HAL_GetTick() > Message_Time) &&(User_Message.Timeshow != (0-1)))
+		{
+			User_Message.Timeshow = 0;
+			if(display_message_old)
+			{
+				sprintf(Textmessage,TextErrmessage);
+			}
+			else
+			{
+				sprintf(Textmessage,"PLEASE ENTER DESTINATION FLOOR");
+			}
+			Keytimout = 0;
+		}
+		//return;
+	}
+
 	if((virt_key[0]!=virt_key_old[0])||(virt_key[1]!=virt_key_old[1]))
 	{
 		virt_key_old[0] = virt_key[0];
 		virt_key_old[1] = virt_key[1];
-		Keytimout = HAL_GetTick()+1500;
+		if(User_Message.Timeshow)
+		{
+			Keytimout = HAL_GetTick()+300;
+		}
+		else
+		{
+			Keytimout = HAL_GetTick()+1500;
+		}
 		for(int cnt =0;cnt<30;cnt++)
 		{
 			Buf[cnt] =0;
 		}
-		Dwin_Write_VP(0x1500,Buf,15);     //write buf to VP
+		Dwin_Write_VP(0x1500,Buf,15);     //hide message
 		Buf[0]=00;
 		Buf[1]=virt_key_old [0];
 		Buf[2]=00;
 		Buf[3]=virt_key_old [1];
-		Dwin_Write_VP(0x1100,Buf,2);        //set floor name
+		Dwin_Write_VP(0x1100,Buf,2);
 	}
 	if(HAL_GetTick()>Keytimout)
 	{
-		sprintf((char *)Buf,"PLEASE ENTER DESTINATION FLOOR");
+		sprintf((char *)Buf,Textmessage);   //show message
 		Dwin_Write_VP(0x1500,Buf,15);     //write buf to VP
 		virt_key_cnt =0;
 			Buf[0]=00;
@@ -332,7 +444,7 @@ void DWIN_Message_Process(void)
 			Buf[3]=0x20;
 			virt_key_old[0] = virt_key[0] = 0x20;
 			virt_key_old[1] = virt_key[1] = 0x20;
-			Dwin_Write_VP(0x1100,Buf,2);        //set floor name
+			Dwin_Write_VP(0x1100,Buf,2);        //clear floor call
 			Keytimout = 0-1;
 	}
 }
