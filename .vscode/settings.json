@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.H": "c",
+        "EEPROM.C": "cpp"
+    }
+}
