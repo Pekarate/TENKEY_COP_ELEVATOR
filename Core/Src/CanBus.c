@@ -851,7 +851,7 @@ void set_output (uint8_t *virt){
 					{
 						if (virt [IO_STATE] & 0x01)
 						{
-							bit_set (Callstatus[(i-1)/8], (i-1)%8);
+							bit_set (Callstatus[(i-1)/8], (i-1)%8); //from Vincent
 						}
 						else
 						{

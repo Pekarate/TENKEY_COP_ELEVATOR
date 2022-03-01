@@ -529,6 +529,8 @@ int main(void)
 		for(i = 0; i < mMax_InByte; i++)
 			instate_Pre[i] = in[i] ^ in_polarity[i];		// read input state; invert if desired
 		instate[0] = (instate_Pre[0] & 0x3);      //close and openbutton
+		instate[1] = (instate_Pre[1] & 0x80);      //xmf
+		instate[2] = instate_Pre[2];      //xmf
 		uint16_t keytmp = (uint16_t)((instate_Pre[0] | ((uint16_t)instate_Pre[1]<<8)) >>2); //BTN start IN3
 		if(inold_Pre != keytmp)
 		{
