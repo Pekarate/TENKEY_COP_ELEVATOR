@@ -28,7 +28,6 @@ Core/Src/Uart.o: ../Core/Src/Uart.c ../Core/Inc/AllHeader.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h \
  ../Core/Inc/Init.h ../Core/Inc/CanBus.h ../Core/Inc/EEPROM.h \
  ../Core/Inc/Subprog.h ../Core/Inc/Uart.h ../Core/Inc/Version.h \
@@ -99,8 +98,6 @@ Core/Src/Uart.o: ../Core/Src/Uart.c ../Core/Inc/AllHeader.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
-
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h:
 

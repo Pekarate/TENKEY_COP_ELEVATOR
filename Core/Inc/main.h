@@ -62,6 +62,10 @@ void Error_Handler(void);
 #define Buzzer_Out_GPIO_Port GPIOA
 #define HC595_SEL_Pin GPIO_PIN_1
 #define HC595_SEL_GPIO_Port GPIOA
+#define USART2_TX_Pin GPIO_PIN_2
+#define USART2_TX_GPIO_Port GPIOA
+#define USART2_CLK_Pin GPIO_PIN_4
+#define USART2_CLK_GPIO_Port GPIOA
 #define SCK_Pin GPIO_PIN_5
 #define SCK_GPIO_Port GPIOA
 #define MISO_Pin GPIO_PIN_6
@@ -104,10 +108,20 @@ void Error_Handler(void);
 #define IC_IN10_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define SCK (*(volatile uint32_t *)0x42210194)
+
+#define PIN_A2 (*(volatile uint32_t *)0x42210188)  //i
+
+#define PIN_A4 (*(volatile uint32_t *)0x42210190)  //i
+
 #define PIN_A6 (*(volatile uint32_t *)0x42210118)  //i
-#define PIN_A7 (*(volatile uint32_t *)0x4221019C)
+#define PIN_A7 (*(volatile uint32_t *)0x4221019C)  //out
+
 #define HC959_SEl (*(volatile uint32_t *)0x42210184)  //PA1_O
 #define HC166_SEl (*(volatile uint32_t *)0x422101BC)  //PA15_O
+#define USART2_TX_HIGH PIN_A2 = 1
+#define USART2_TX_LOW PIN_A2 = 0
+#define USART2_CLK_HIGH PIN_A4 = 1
+#define USART2_CLK_LOW PIN_A4 = 0
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -3,25 +3,80 @@
 #include	"AllHeader.h"
 
 
-void UART_SendBuf(uint8_t* pBuf, uint8_t len){
-//	uint8_t i;
-//
-//	for(i=0; i<len; i++)
+uint8_t usart2_buf[100];
+uint8_t usart2_len =0;
+extern TIM_HandleTypeDef htim3;
+static inline void delay_us(uint16_t us)
+{
+	__HAL_TIM_SET_COUNTER(&htim3,0);
+	while(htim3.Instance->CNT <us);
+}
+void SOFT_USART_SEND_BYTE(uint8_t dt)
+{
+
+	for(uint8_t i=0;i<8;i++)
+	{
+		PIN_A2 = (dt>>i)&0x01;
+		USART2_CLK_HIGH;
+
+		delay_us(50);
+		USART2_CLK_LOW;
+		delay_us(50);
+	}
+}
+void SOFT_USART_SEND_BYTES(uint8_t* pBuf, uint8_t len)
+{
+
+	for(uint8_t i=0;i<len;i++)
+	{
+		SOFT_USART_SEND_BYTE(*(pBuf+i));
+	}
+}
+//void HAL_USART_TxCpltCallback(USART_HandleTypeDef *husart)
+//{
+//	if (husart->Instance == husart2.Instance)
 //	{
-//		uart_send_buff[uart_send_to++] = pBuf[i];
-//		if (uart_send_to == UART_BUFF_SIZE)
-//			uart_send_to = 0;
+////					PIR1bits.TXIF = 0;
+//					if (uart_send_len)
+//						{
+//							memcpy(usart2_buf,uart_send_buff,uart_send_len);
+//							usart2_len = uart_send_len;
+//							HAL_USART_Transmit_IT(&husart2, usart2_buf, usart2_len);
+//							uart_send_len =0;
+//							bFunc.uart_send_busy = true;
+//						}
+//					else
+//						{
+//							bFunc.uart_send_busy = false;
+//						}
 //	}
-//	INTCONbits.GIEL	= 0;
+//}
+
+void UART_SendBuf(uint8_t* pBuf, uint8_t len){
+	uint8_t i;
+
+	for(i=0; i<len; i++)
+	{
+		uart_send_buff[uart_send_to++] = pBuf[i];
+		if (uart_send_to == UART_BUFF_SIZE)
+			uart_send_to = 0;
+	}
+//	//INTCONbits.GIEL	= 0;
+//	CLEAR_BIT(husart2.Instance->CR1, USART_CR1_TXEIE);
 //	uart_send_len += len;
 //	if (!bFunc.uart_send_busy)
 //	{
-//		TXREG = uart_send_buff[uart_send_ro++];
-//		if (uart_send_ro == UART_BUFF_SIZE)
-//			uart_send_ro = 0;
-//		-- uart_send_len;
-//		bFunc.uart_send_busy = true;
+//		//TXREG = uart_send_buff[uart_send_ro++];
+//		if(uart_send_len)
+//		{
+//			memcpy(usart2_buf,uart_send_buff,uart_send_len);
+//			usart2_len = uart_send_len;
+//			HAL_USART_Transmit_IT(&husart2, usart2_buf, usart2_len);
+//			uart_send_len =0;
+//			bFunc.uart_send_busy = true;
+//		}
 //	}
+//	SET_BIT(husart2.Instance->CR1, USART_CR1_TXEIE);
 //	PIE1bits.TXIE		= 1;
 //	INTCONbits.GIEL	= 1;
 }

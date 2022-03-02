@@ -19,7 +19,7 @@
 #define	BUF_MESSAGE		3
 
 #define	A_BETR			38
-#define	UART_BUFF_SIZE	15
+#define	UART_BUFF_SIZE	1024
 
 #ifdef _DISPLAY_C_
 //���庯���ͱ���
