@@ -4257,16 +4257,16 @@ void set_output (uint8_t *virt){
  8001df2:	2226      	movs	r2, #38	; 0x26
  8001df4:	705a      	strb	r2, [r3, #1]
 					}
-					if((display[BUF_UNIT] != 'J') && (display[BUF_TEN] != 'X'))
+					if((display[BUF_UNIT] != 'X') && (display[BUF_TEN] != 'J'))
  8001df6:	4b88      	ldr	r3, [pc, #544]	; (8002018 <set_output+0x55c>)
  8001df8:	785b      	ldrb	r3, [r3, #1]
  8001dfa:	b2db      	uxtb	r3, r3
- 8001dfc:	2b4a      	cmp	r3, #74	; 0x4a
+ 8001dfc:	2b58      	cmp	r3, #88	; 0x58
  8001dfe:	d04c      	beq.n	8001e9a <set_output+0x3de>
  8001e00:	4b85      	ldr	r3, [pc, #532]	; (8002018 <set_output+0x55c>)
  8001e02:	781b      	ldrb	r3, [r3, #0]
  8001e04:	b2db      	uxtb	r3, r3
- 8001e06:	2b58      	cmp	r3, #88	; 0x58
+ 8001e06:	2b4a      	cmp	r3, #74	; 0x4a
  8001e08:	d047      	beq.n	8001e9a <set_output+0x3de>
 					{
 						if((virt[IO_SUB_FUNC]<56) &&(virt[IO_SUB_FUNC]))

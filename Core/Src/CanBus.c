@@ -898,7 +898,7 @@ void set_output (uint8_t *virt){
 						display [BUF_TEN] = A_BETR;
 						display [BUF_UNIT] = A_BETR;
 					}
-					if((display[BUF_UNIT] != 'J') && (display[BUF_TEN] != 'X'))
+					if((display[BUF_UNIT] != 'X') && (display[BUF_TEN] != 'J'))
 					{
 						if((virt[IO_SUB_FUNC]<56) &&(virt[IO_SUB_FUNC]))
 						{
