@@ -62,7 +62,7 @@ void Display_TestMode(void);
 
 #else
 extern	uint8_t	volatile		display [];
-extern	uint8_t mDisp_buf[];
+extern	uint8_t mDisp_buf[5];
 
 //extern	uint8_t uart_send_busy;
 extern	uint8_t uart_send_to;

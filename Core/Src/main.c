@@ -272,6 +272,7 @@ int Find_target_Floor(int len)
 	}
 	return -1;
 }
+extern void Usart_send_frame(void);
 uint8_t checkwatchdog =0;
 /* USER CODE END 0 */
 
@@ -314,16 +315,18 @@ int main(void)
   USART2_TX_LOW;
  uint8_t data[2] ={0xB0,0};
  HAL_TIM_Base_Start(&htim3);
-  while(1)
-  {
-	  //HAL_USART_Transmit(&husart2, &data, 1, 10);
-//	  husart2.Instance->DR =0xB0;
-//	  mDisp_buf[1] = 'B';
-//	  mDisp_buf[2] = '1';
-//	  mDisp_buf[3] = 0;
-	  Display_device();
-	  HAL_Delay(50);
-  }
+// mDisp_buf[1] = 'B';
+// mDisp_buf[2] = '1';
+// mDisp_buf[3] = 0;
+//  while(1)
+//  {
+//	  Usart_send_frame();
+//	  //HAL_USART_Transmit(&husart2, &data, 1, 10);
+////	  husart2.Instance->DR =0xB0;
+//
+//	  Display_device();
+//	  HAL_Delay(50);
+//  }
   ClrWdt();							//reset watchdog timer
   Flash_Read_Bytes((uint8_t *)&FloorName, DATA_START_ADDRESS, sizeof(FloorName));
   __HAL_DBGMCU_FREEZE_WWDG();
@@ -462,6 +465,7 @@ int main(void)
 	  {
 		  while(1);
 	  }
+	  Usart_send_frame();
 		if (rc)													// Message in receive buffer
 			read_rx ();										// read and handle message
 		if ((!heartbeat) && (hse_heartbeat) && (!bBusOffTimer))	//time to send heartbeat message
