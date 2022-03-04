@@ -57,15 +57,13 @@ int LedOfftimout = INT32_MAX;
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan;
 
-IWDG_HandleTypeDef hiwdg;
-
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
-
-WWDG_HandleTypeDef hwwdg;
+USART_HandleTypeDef husart2;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -78,9 +76,9 @@ static void MX_CAN_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_IWDG_Init(void);
-static void MX_WWDG_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_DMA_Init(void);
+static void MX_USART2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -246,8 +244,7 @@ void check_hse (uint8_t mode){
 void ClrWdt (void)
 {
 #if ! USER_DEBUG
-	HAL_IWDG_Refresh(&hiwdg);
-	HAL_WWDG_Refresh(&hwwdg);
+
 #endif
 }
 int Find_target_Floor(int len)
@@ -308,16 +305,27 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
-  MX_IWDG_Init();
-  MX_WWDG_Init();
   MX_TIM3_Init();
+  MX_DMA_Init();
+  MX_USART2_Init();
   /* USER CODE BEGIN 2 */
   USART2_TX_LOW;
  uint8_t data[2] ={0xB0,0};
  HAL_TIM_Base_Start(&htim3);
-// mDisp_buf[1] = 'B';
-// mDisp_buf[2] = '1';
-// mDisp_buf[3] = 0;
+  mDisp_buf[1] = 'B';
+  mDisp_buf[2] = '1';
+  mDisp_buf[3] = 0;
+ while(1)
+ {
+		int checksum = 0;
+		mDisp_buf[0] = 0xB0;
+		for (int i=0; i<4; ++i)
+			checksum += mDisp_buf[i];
+		mDisp_buf[4] = checksum;
+	 HAL_USART_Transmit_DMA(&husart2, mDisp_buf, 5);
+	 HAL_Delay(100);
+ }
+
 //  while(1)
 //  {
 //	  Usart_send_frame();
@@ -715,11 +723,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
@@ -776,34 +783,6 @@ static void MX_CAN_Init(void)
   /* USER CODE BEGIN CAN_Init 2 */
 
   /* USER CODE END CAN_Init 2 */
-
-}
-
-/**
-  * @brief IWDG Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IWDG_Init(void)
-{
-
-  /* USER CODE BEGIN IWDG_Init 0 */
-
-  /* USER CODE END IWDG_Init 0 */
-
-  /* USER CODE BEGIN IWDG_Init 1 */
-
-  /* USER CODE END IWDG_Init 1 */
-  hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
-  hiwdg.Init.Reload = 4095;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN IWDG_Init 2 */
-
-  /* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -977,32 +956,52 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
-  * @brief WWDG Initialization Function
+  * @brief USART2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_WWDG_Init(void)
+static void MX_USART2_Init(void)
 {
 
-  /* USER CODE BEGIN WWDG_Init 0 */
+  /* USER CODE BEGIN USART2_Init 0 */
 
-  /* USER CODE END WWDG_Init 0 */
+  /* USER CODE END USART2_Init 0 */
 
-  /* USER CODE BEGIN WWDG_Init 1 */
+  /* USER CODE BEGIN USART2_Init 1 */
 
-  /* USER CODE END WWDG_Init 1 */
-  hwwdg.Instance = WWDG;
-  hwwdg.Init.Prescaler = WWDG_PRESCALER_8;
-  hwwdg.Init.Window = 127;
-  hwwdg.Init.Counter = 127;
-  hwwdg.Init.EWIMode = WWDG_EWI_DISABLE;
-  if (HAL_WWDG_Init(&hwwdg) != HAL_OK)
+  /* USER CODE END USART2_Init 1 */
+  husart2.Instance = USART2;
+  husart2.Init.BaudRate = 9600;
+  husart2.Init.WordLength = USART_WORDLENGTH_8B;
+  husart2.Init.StopBits = USART_STOPBITS_1;
+  husart2.Init.Parity = USART_PARITY_NONE;
+  husart2.Init.Mode = USART_MODE_TX_RX;
+  husart2.Init.CLKPolarity = USART_POLARITY_LOW;
+  husart2.Init.CLKPhase = USART_PHASE_2EDGE;
+  husart2.Init.CLKLastBit = USART_LASTBIT_ENABLE;
+  if (HAL_USART_Init(&husart2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN WWDG_Init 2 */
+  /* USER CODE BEGIN USART2_Init 2 */
 
-  /* USER CODE END WWDG_Init 2 */
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 }
 
@@ -1021,8 +1020,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, Buzzer_Out_Pin|HC595_SEL_Pin|USART2_TX_Pin|USART2_CLK_Pin
-                          |SCK_Pin|MOSI_Pin|UART_DE_Pin|HC166_SEL_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Buzzer_Out_Pin|HC595_SEL_Pin|SCK_Pin|MOSI_Pin
+                          |UART_DE_Pin|HC166_SEL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : Buzzer_Out_Pin HC595_SEL_Pin MOSI_Pin UART_DE_Pin
                            HC166_SEL_Pin */
@@ -1033,12 +1032,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : USART2_TX_Pin USART2_CLK_Pin SCK_Pin */
-  GPIO_InitStruct.Pin = USART2_TX_Pin|USART2_CLK_Pin|SCK_Pin;
+  /*Configure GPIO pin : SCK_Pin */
+  GPIO_InitStruct.Pin = SCK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(SCK_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : MISO_Pin */
   GPIO_InitStruct.Pin = MISO_Pin;

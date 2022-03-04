@@ -62,10 +62,6 @@ void Error_Handler(void);
 #define Buzzer_Out_GPIO_Port GPIOA
 #define HC595_SEL_Pin GPIO_PIN_1
 #define HC595_SEL_GPIO_Port GPIOA
-#define USART2_TX_Pin GPIO_PIN_2
-#define USART2_TX_GPIO_Port GPIOA
-#define USART2_CLK_Pin GPIO_PIN_4
-#define USART2_CLK_GPIO_Port GPIOA
 #define SCK_Pin GPIO_PIN_5
 #define SCK_GPIO_Port GPIOA
 #define MISO_Pin GPIO_PIN_6
