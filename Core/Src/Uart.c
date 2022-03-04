@@ -6,32 +6,6 @@
 uint8_t usart2_buf[100];
 uint8_t usart2_len =0;
 extern TIM_HandleTypeDef htim3;
-typedef struct {
-	uint8_t Buf[10];
-	uint8_t len;
-}_Usart_frame;
-_Usart_frame Usart_frame[100];
-uint8_t UartFrameCnt =0;
-void SOFT_USART_SEND_BYTES(uint8_t* pBuf, uint8_t len);
-void Add_USart_Frame(_Usart_frame Frame)
-{
-	memcpy(&Usart_frame[UartFrameCnt],&Frame,sizeof(_Usart_frame));
-	UartFrameCnt ++;
-	if(UartFrameCnt == 100)
-		UartFrameCnt = 0;
-}
-static uint8_t UsartFrameindex = 0;
-void Usart_send_frame(void)
-{
-
-	if((UartFrameCnt != UsartFrameindex))
-	{
-		SOFT_USART_SEND_BYTES(Usart_frame[UsartFrameindex].Buf,Usart_frame[UsartFrameindex].len);
-		UsartFrameindex ++;
-		if(UsartFrameindex == 100)
-			UsartFrameindex = 0;
-	}
-}
 static inline void delay_us(uint16_t us)
 {
 	__HAL_TIM_SET_COUNTER(&htim3,0);
@@ -45,9 +19,9 @@ void SOFT_USART_SEND_BYTE(uint8_t dt)
 		PIN_A2 = (dt>>i)&0x01;
 		USART2_CLK_HIGH;
 
-		delay_us(30);
+		delay_us(50);
 		USART2_CLK_LOW;
-		delay_us(30);
+		delay_us(50);
 	}
 }
 void SOFT_USART_SEND_BYTES(uint8_t* pBuf, uint8_t len)
@@ -79,10 +53,14 @@ void SOFT_USART_SEND_BYTES(uint8_t* pBuf, uint8_t len)
 //}
 
 void UART_SendBuf(uint8_t* pBuf, uint8_t len){
-	_Usart_frame Frame;
-	memcpy(Frame.Buf,pBuf,len);
-	Frame.len = len;
-	Add_USart_Frame(Frame);
+	uint8_t i;
+
+	for(i=0; i<len; i++)
+	{
+		uart_send_buff[uart_send_to++] = pBuf[i];
+		if (uart_send_to == UART_BUFF_SIZE)
+			uart_send_to = 0;
+	}
 //	//INTCONbits.GIEL	= 0;
 //	CLEAR_BIT(husart2.Instance->CR1, USART_CR1_TXEIE);
 //	uart_send_len += len;

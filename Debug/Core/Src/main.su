@@ -1,0 +1,18 @@
+<<<<<<< HEAD
+=======
+main.c:110:6:HAL_TIM_PeriodElapsedCallback	24	static
+main.c:194:6:check_hse	24	static
+main.c:246:6:ClrWdt	8	static
+main.c:253:5:Find_target_Floor	24	static
+main.c:282:5:main	16	static
+main.c:706:6:SystemClock_Config	72	static
+main.c:746:13:MX_CAN_Init	8	static
+main.c:783:13:MX_IWDG_Init	8	static
+main.c:811:13:MX_TIM1_Init	32	static
+main.c:857:13:MX_TIM2_Init	32	static
+main.c:902:13:MX_TIM3_Init	32	static
+main.c:947:13:MX_USART1_UART_Init	8	static
+main.c:980:13:MX_WWDG_Init	8	static
+main.c:1010:13:MX_GPIO_Init	40	static
+main.c:1073:6:Error_Handler	4	static,ignoring_inline_asm
+>>>>>>> parent of 2697942 (fixed usart by software)
